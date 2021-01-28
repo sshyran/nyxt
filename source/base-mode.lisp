@@ -150,6 +150,8 @@
                      "C-x C-f" 'open-file))
                   :type keymap:scheme)))
 
+(defparameter q (make-instance 'user-interface::paragraph :text "salmon"))
+
 (define-command list-buffers (&key (cluster nil))
   "Show the *Buffers* buffer."
   (labels ((cluster-buffers ()
@@ -189,16 +191,6 @@
                           when (internal-buffer-p buffer)
                           collect (buffer-markup buffer))))))
     (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
-      (markup:markup
-       (:style (style buffer))
-       (:h1 "Buffers")
-       (:a :class "button" :href (lisp-url '(nyxt::list-buffers)) "Update")
-       (:br "")
-       (:div
-        (if cluster
-            (append (list (internal-buffers-markup)) 
-                    (loop for cluster-key being the hash-key
-                          using (hash-value cluster) of (cluster-buffers)
-                          collect (cluster-markup cluster-key cluster)))
-            (loop for buffer in (buffer-list)
-                  collect (buffer-markup buffer))))))))
+      (user-interface:connect q buffer)
+      (markup:markup*
+       (user-interface:object-expression q)))))

@@ -5,8 +5,10 @@
 
 (in-package :nyxt)
 
-(defmethod user-interface:update ((paragraph user-interface:paragraph))
+(defmethod user-interface:update ((element user-interface:ui-element))
   (ffi-buffer-evaluate-javascript-async
-   (user-interface:buffer paragraph)
-   (ps:ps (let ((element (ps:chain document (get-element-by-id (ps:lisp (user-interface:id paragraph))))))
-            (setf (ps:chain element text-content) (ps:lisp (user-interface:text paragraph)))))))
+   (user-interface:buffer element)
+   (ps:ps (let ((element (ps:chain document (get-element-by-id
+                                             (ps:lisp (user-interface:id element))))))
+            (setf (ps:chain element |innerHTML|) 
+                  (ps:lisp (markup:markup* (user-interface:object-expression element))))))))

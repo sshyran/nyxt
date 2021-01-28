@@ -20,6 +20,9 @@
   (cl-markup:markup*
    (object-expression element)))
 
+(defmethod object-expression ((object t))
+  (princ-to-string object))
+
 (defmethod connect ((element ui-element) buffer)
   (setf (buffer element) buffer))
 
@@ -45,4 +48,7 @@
   `(:p :id ,(id paragraph) ,(text paragraph)))
 
 (defmethod text ((paragraph paragraph))
-  (slot-value paragraph 'text))
+  (object-expression (slot-value paragraph 'text)))
+
+(defclass unordered-list (ui-element)
+  ((elements :initform (list) :initarg :elements)))

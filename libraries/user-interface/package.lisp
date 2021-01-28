@@ -13,5 +13,6 @@
    #:update
    #:text
    #:object-expression
+   #:ui-element
    #:paragraph
    #:connect))
