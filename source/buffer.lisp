@@ -839,7 +839,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
             ;; TODO: Can be a source of inefficiency due to an always-checked conditional.
             ;; Move somewhere (`request-resource'?) where the impact of conditional will be weaker?
             (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
-            (ffi-buffer-load buffer url))))))
+            (ffi-buffer-load buffer url)))))
 
 (defun new-buffer-load (input-url)
   "Load INPUT-URL in new buffer.

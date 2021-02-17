@@ -167,30 +167,6 @@ not return."
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-class gtk-window ()
-  ((gtk-object)
-   (box-layout)
-   (minibuffer-container)
-   (minibuffer-view)
-   (status-container)
-   (message-container)
-   (message-view)
-   (key-string-buffer))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
-
-(define-class gtk-buffer ()
-  ((gtk-object)
-   (proxy-uri (quri:uri ""))
-   (proxy-ignored-hosts '())
-   (data-manager-path (make-instance 'data-manager-data-path
-                                     :dirname (uiop:xdg-cache-home +data-root+))
-                      :documentation "Directory in which the WebKitGTK
-data-manager will store the data separately for each buffer."))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
-
 (defmethod expand-data-path ((profile private-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `private-data-profile'."
   nil)
