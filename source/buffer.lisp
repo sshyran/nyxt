@@ -887,7 +887,6 @@ See `buffer-load'."
                            (declare (ignorable source))
                            (history-initial-suggestions)))
    (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
-   (prompter:history (minibuffer-set-url-history *browser*))
    (prompter:must-match-p nil)
    (prompter:actions '(buffer-load
                        new-buffer-load))))
@@ -899,7 +898,6 @@ See `buffer-load'."
    (prompter:filter nil)
    ;; TODO: Remove slots that are set to default value.
    (prompter:multi-selection-p nil)
-   (prompter:history (minibuffer-set-url-history *browser*))
    (prompter:must-match-p nil)
    (prompter:actions '(buffer-load
                        new-buffer-load))))
@@ -907,17 +905,19 @@ See `buffer-load'."
 (define-command set-url2 (&key prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
   ;; TODO: Do we still need to add current URL to history?
-  (sera:and-let* ((history (minibuffer-set-url-history *browser*)))
-    (containers:insert-item history (url (current-buffer))))
-  (prompt
-   :prompter (list
-              :prompt "Open URL"
-              :input (if prefill-current-url-p
-                         (object-string (url (current-buffer))) "")
-              :sources (list (make-instance 'new-url-source)
-                             (make-instance 'global-history-source)))
-   ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
-   ))
+  (let ((history (minibuffer-set-url-history *browser*)))
+    (when history
+      (containers:insert-item history (quri:render-uri (url (current-buffer)))))
+    (prompt
+     :prompter (list
+                :prompt "Open URL"
+                :input (if prefill-current-url-p
+                           (object-string (url (current-buffer))) "")
+                :history history
+                :sources (list (make-instance 'new-url-source)
+                               (make-instance 'global-history-source)))
+     ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
+     )))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
