@@ -20,7 +20,7 @@ The function can be passed ARGS."
 (defmacro pflet (((function function-arguments &body function-body)) &body body)
   "Define single parenscript function in a flet body."
   `(flet ((,function ,function-arguments
-            (ffi-buffer-evaluate-javascript-async (current-buffer)
+            (ffi-buffer-evaluate-javascript (current-buffer)
                                             (ps:ps ,@function-body))))
      ,@body))
 
