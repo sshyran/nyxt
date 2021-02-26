@@ -175,26 +175,6 @@
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
 
-(define-command search-buffer (&key (case-sensitive-p nil explicit-case-p))
-  "Start a search on the current buffer."
-  (apply #'search-over-buffers (list (current-buffer))
-         (if explicit-case-p
-             `(:case-sensitive-p ,case-sensitive-p)
-             '())))
-
-(define-command search-buffers (&key (case-sensitive-p nil explicit-case-p))
-  "Show a prompt in the minibuffer that allows to choose
-one or more buffers, and then start a search prompt that
-searches over the selected buffer(s)."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Search buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (buffer-suggestion-filter))))
-    (apply #'search-over-buffers buffers
-           (if explicit-case-p
-               `(:case-sensitive-p ,case-sensitive-p)
-               '()))))
-
 (defun search-over-buffers (buffers &key (case-sensitive-p nil explicit-case-p))
   "Add search boxes for a given search string over the
 provided buffers."
@@ -255,7 +235,7 @@ provided buffers."
                           (remove-focus))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-command search-buffer2 (&key case-sensitive-p)
+(define-command search-buffer (&key case-sensitive-p)
   "Start a search on the current buffer."
   (prompt
    :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
@@ -263,7 +243,7 @@ provided buffers."
    :sources (list
              (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p))))
 
-(define-command search-buffers2 (&key case-sensitive-p)
+(define-command search-buffers (&key case-sensitive-p)
   "Start a search on the current buffer."
   ;; TODO: Fix following across buffers.
   (let ((buffers (prompt
