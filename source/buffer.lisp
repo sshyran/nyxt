@@ -172,6 +172,16 @@ and must return a (possibly new) URL.")
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
+   (password-interface (make-password-interface)
+                       :type password::password-interface
+                       :documentation "The current password interface.
+See `password:*interfaces*' for the list of all currently registered interfaces.
+To use, say, KeepassXC, set this slot to
+
+  (make-instance 'password:user-keepassxc-interface)
+
+Password interfaces may have user classes (that is, prefixed with 'user-' as in
+the above example), in which case you can use `define-configuration' on them.")
    (download-path (make-instance 'download-data-path
                                  :dirname (xdg-download-dir))
                   :type data-path
@@ -254,6 +264,17 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (defmethod initialize-instance :after ((buffer web-buffer) &key)
   (when (expand-path (cookies-path buffer))
     (ensure-parent-exists (expand-path (cookies-path buffer)))))
+
+(define-class nosave-buffer (user-web-buffer)
+  ((data-profile (make-instance 'nosave-data-profile))
+   (default-modes '(reduce-tracking-mode certificate-exception-mode
+                    web-mode base-mode)))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-user-class nosave-buffer)
 
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
@@ -502,6 +523,23 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
           (setf (url buffer) (quri:uri url))))
     buffer))
 
+(define-command make-nosave-buffer (&key (title "") modes (url "") (load-url-p t))
+  "Create a new buffer that won't save anything to the filesystem.
+MODES is a list of mode symbols.
+If URL is `:default', use `default-new-buffer-url'.
+LOAD-URL-P controls whether to load URL right at buffer creation."
+  (let* ((buffer (buffer-make *browser* :title title
+                                        :default-modes modes
+                                        :nosave-buffer-p t))
+         (url (if (eq url :default)
+                  (default-new-buffer-url buffer)
+                  url)))
+    (unless (url-empty-p url)
+      (if load-url-p
+          (buffer-load url :buffer buffer)
+          (setf (url buffer) (quri:uri url))))
+    buffer))
+
 (define-command make-internal-buffer (&key (title "") modes
                                       no-history-p)
   "Create a new buffer.
@@ -514,28 +552,31 @@ If URL is `:default', use `default-new-buffer-url'."
                                    (:data-profile data-profile)
                                    (:default-modes list)
                                    (:dead-buffer buffer)
+                                   (:nosave-buffer-p boolean)
                                    (:internal-buffer-p boolean)
                                    (:parent-buffer buffer)
                                    (:no-history-p boolean)))
                 buffer-make))
 (defun buffer-make (browser &key data-profile title default-modes
-                              dead-buffer internal-buffer-p parent-buffer
-                              no-history-p)
+                                 dead-buffer internal-buffer-p
+                                 parent-buffer no-history-p
+                                 (nosave-buffer-p (nosave-buffer-p parent-buffer)))
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (let* ((buffer (if dead-buffer
-                     (progn
-                       ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
-                       (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
-                       (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance (if internal-buffer-p
-                                                'user-internal-buffer
-                                                'user-web-buffer)
-                            :id (get-unique-buffer-identifier *browser*)
-                            (append (when title `(:title ,title))
-                                    (when default-modes `(:default-modes ,default-modes))
-                                    (when data-profile `(:data-profile ,data-profile)))))))
+  (let ((buffer (if dead-buffer
+                    (progn
+                      ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
+                      (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
+                      (ffi-buffer-make dead-buffer))
+                    (apply #'make-instance (cond
+                                             (internal-buffer-p 'user-internal-buffer)
+                                             (nosave-buffer-p 'user-nosave-buffer)
+                                             (t 'user-web-buffer))
+                           :id (get-unique-buffer-identifier *browser*)
+                           (append (when title `(:title ,title))
+                                   (when default-modes `(:default-modes ,default-modes))
+                                   (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
@@ -544,15 +585,21 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)
     (unless no-history-p
-      ;; Register buffer in global history:
-      (with-data-access (history (history-path buffer)
-                         :default (make-history-tree buffer))
-        ;; Owner may already exist if history was just create with the above
-        ;; default value.
-        (unless (htree:owner history (id buffer))
-          (htree:add-owner history (id buffer)
-                           :creator-id (when parent-buffer
-                                         (id parent-buffer))))))
+      ;; When we create buffer, current one can override the
+      ;; data-profile of the created buffer. This is dangerous,
+      ;; especially for nosave buffers.
+      (with-current-buffer buffer
+        ;; Register buffer in global history:
+        (with-data-access (history (history-path buffer)
+                                   :default (make-history-tree buffer))
+          ;; Owner may already exist if history was just create with the above
+          ;; default value.
+          (unless (htree:owner history (id buffer))
+            (htree:add-owner history (id buffer)
+                             :creator-id (when (and parent-buffer
+                                                    (not nosave-buffer-p)
+                                                    (not (nosave-buffer-p parent-buffer)))
+                                           (id parent-buffer)))))))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
     (hooks:run-hook (buffer-make-hook browser) buffer)
@@ -623,10 +670,14 @@ proceeding."
   (setf (last-access (active-buffer window)) (local-time:now))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
-    (unless (internal-buffer-p buffer)
-      (with-data-access (history (history-path buffer)
-                         :default (make-history-tree buffer))
-        (htree:set-current-owner history (id buffer))))
+    ;; When switching buffers, `current-buffer' is still the old one,
+    ;; so path is expanded/queried by the rules of the old
+    ;; buffer. That's not desirable, especially for nosave-buffers.
+    (with-current-buffer buffer
+      (unless (internal-buffer-p buffer)
+        (with-data-access (history (history-path buffer)
+                           :default (make-history-tree buffer))
+          (htree:set-current-owner history (id buffer)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
@@ -741,10 +792,12 @@ proceeding."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command make-buffer-focus (&key (url :default) parent-buffer)
+(define-command make-buffer-focus (&key (url :default) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (make-buffer :url url :parent-buffer parent-buffer)))
+  (let ((buffer (if nosave-buffer-p
+                    (make-nosave-buffer :url url)
+                    (make-buffer :url url :parent-buffer parent-buffer))))
     (set-current-buffer buffer)
     buffer))
 
@@ -848,16 +901,15 @@ See `buffer-load'."
   ;; that's loaded and the default one.
   (buffer-load input-url :buffer (make-buffer-focus :url "")))
 
-(define-command set-url (&key new-buffer-p prefill-current-url-p)
+(define-command set-url (&key new-buffer-p prefill-current-url-p 
+                              (nosave-buffer-p (nosave-buffer-p (current-buffer))))
   "Set the URL for the current buffer, completing with history."
-  (let ((history (minibuffer-set-url-history *browser*)))
+  (let ((history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt-minibuffer
-                :input-prompt (format nil "Open URL in ~A buffer"
-                                      (if new-buffer-p
-                                          "new"
-                                          "current"))
+                :input-prompt (format nil "Open URL in ~:[current~;new~]~:[~; nosave~] buffer"
+                                      new-buffer-p nosave-buffer-p)
                 :input-buffer (if prefill-current-url-p
                                   (object-string (url (current-buffer))) "")
                 :default-modes '(set-url-mode minibuffer-mode)
@@ -875,7 +927,7 @@ See `buffer-load'."
                                    ;; Make empty buffer, or else there might be
                                    ;; a race condition between the URL that's
                                    ;; loaded and the default one.
-                                   (make-buffer-focus :url "")
+                                   (make-buffer-focus :url "" :nosave-buffer-p nosave-buffer-p)
                                    (current-buffer))))))
 
 (define-class global-history-source (prompter:source)
@@ -925,6 +977,10 @@ See `buffer-load'."
 (define-command set-url-new-buffer ()
   "Prompt for a URL and set it in a new focused buffer."
   (set-url :new-buffer-p t))
+
+(define-command set-url-nosave-buffer ()
+  "Prompt for a URL and set it in a new focused nosave buffer."
+  (set-url :new-buffer-p t :nosave-buffer-p t))
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."

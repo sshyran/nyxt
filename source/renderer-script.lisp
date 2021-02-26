@@ -17,18 +17,15 @@ The function can be passed ARGS."
                                        (ps:ps ,@script-body)))))
 
 (export-always 'pflet)
-(defmacro pflet (((function function-arguments &body function-body)) &body body)
-  "Define single parenscript function in a flet body."
-  `(flet ((,function ,function-arguments
-            (ffi-buffer-evaluate-javascript (current-buffer)
-                                            (ps:ps ,@function-body))))
-     ,@body))
+(defmacro pflet (functions &body body)
+  (flet ((transform-definition (name args body)
+           `(,name ,args
+                   (ffi-buffer-evaluate-javascript (current-buffer) (ps:ps . ,body)))))
+    `(flet ,(loop for (name lambda-list . body) in functions
+                  collect (transform-definition name lambda-list body))
+       ,@body)))
 
-;; TODO: after implementing reader-view, utilize reader-view algorithm
-;; to get only document data ignoring images, css, etc
-(define-parenscript document-get-body (&key (limit 100000))
-  (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
-
+(export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
   (defun qsa (context selector)
     (ps:chain context (query-selector-all selector)))
@@ -93,7 +90,7 @@ The function can be passed ARGS."
                                     &body body)
   "Switch to a buffer in MODE displaying CONTENT.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
-BUFFER-VAR is bound to the new bufer in BODY.
+BUFFER-VAR is bound to the new buffer in BODY.
 MODE is a mode symbol.
 BODY must return the HTML markup as a string."
   `(let* ((,buffer-var (or (find-if (lambda (b)

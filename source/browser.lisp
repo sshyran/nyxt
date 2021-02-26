@@ -55,10 +55,9 @@ under your user profile.")
                   :documentation "Thread that listens on socket.
 See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (password-interface (make-password-interface)
-                       :export nil)
    (messages-content '()
-                     :export nil
+                     :export t
+                     :reader messages-content
                      :documentation "A list of all echoed messages.
 Most recent messages are first.")
    (clipboard-ring (make-ring)
@@ -113,9 +112,9 @@ arguments).  It is run after the renderer has been initialized, after the
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
    (open-external-link-in-new-window-p nil
-                                       :documentation "When open links from an external program, or
-when C-clicking on a URL, decide whether to open in a new
-window or not.")
+                                       :documentation "When opening links from
+an external program, or when C-clicking on a URL, decide whether to open in a
+new window or not.")
    (downloads
     :documentation "List of downloads. Used for rendering by download manager.")
    (startup-timestamp (local-time:now)
@@ -362,13 +361,14 @@ If none is found, fall back to `scheme:cua'."
                :export nil
                :documentation "The type of request, e.g. `:link-click'.")
    (new-window-p nil
-                 :documentation "Whether the request wants to happen in a new window.")
+                 :documentation "Whether the request takes place in a
+new window.")
    (known-type-p nil
-                 :documentation "Whether the request is for a contented with
-supported MIME-type (e.g. a picture that can be displayed in
-the web view.")
+                 :documentation "Whether the request is for content with
+supported MIME-type, such as a picture that can be displayed in the web
+view.")
    (keys '()
-         :documentation "The key sequence that was pressed to generate the request."))
+         :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -394,7 +394,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (object-display url))
-         (open-urls (list (object-string url)))
+         (make-buffer-focus :url (object-string url))
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
@@ -639,11 +639,23 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-set-zoom-level (buffer value)
   (:method ((buffer buffer) value)
     (pflet ((zoom ()
-              (ps:let ((style (ps:chain document body style)))
-                (setf (ps:@ style zoom)
-                      (ps:lisp (current-zoom-ratio (current-buffer)))))))
+                  (ps:let ((style (ps:chain document body style)))
+                    (setf (ps:@ style zoom)
+                          (ps:lisp (current-zoom-ratio (current-buffer)))))))
       (with-current-buffer buffer
         (zoom)))))
+(define-ffi-generic ffi-buffer-get-document (buffer)
+  (:method ((buffer buffer))
+    (pflet ((get-html (start end)
+                      (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
+                                                                             (ps:lisp end))))
+            (get-html-length ()
+                             (ps:chain document document-element |innerHTML| length)))
+      (with-current-buffer buffer
+        (let ((slice-size 10000))
+          (reduce #'str:concat
+                  (loop for i from 0 to (parse-integer (get-html-length)) by slice-size
+                        collect (get-html i (+ i slice-size)))))))))
 (define-ffi-generic ffi-generate-input-event (window event))
 (define-ffi-generic ffi-generated-input-event-p (window event))
 (define-ffi-generic ffi-within-renderer-thread (browser thunk))

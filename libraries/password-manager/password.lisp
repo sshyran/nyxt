@@ -3,11 +3,14 @@
 
 (in-package :password)
 
-(defclass password-interface ()
-  ((executable :accessor executable :initarg :executable
+(define-class password-interface ()
+  ((executable nil
                :documentation "The program to query for password information.")
-   (sleep-timer :accessor sleep-timer :initarg :sleep-timer :initform 15
-                :documentation "The amount of time to sleep, in seconds.")))
+   (sleep-timer 15
+                :documentation "The amount of time to sleep, in seconds."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'list-passwords))
@@ -56,11 +59,9 @@ If PASSWORD-NAME is empty, then generate a new password."))
 (defun executable-find (command)
   "Search for COMMAND in the PATH and return the absolute file name.
 Return nil if COMMAND is not found anywhere."
-  (multiple-value-bind (path)
-      (ignore-errors
-       (uiop:run-program (format nil "command -v ~A" command)
-                         :output '(:string :stripped t)))
-    path))
+  (ignore-errors
+   (uiop:run-program (format nil "command -v ~A" command)
+                     :output '(:string :stripped t))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '*interfaces*))

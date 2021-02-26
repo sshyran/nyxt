@@ -236,12 +236,8 @@ with " (:code "nyxt --data-profile dev") ".")
     (:p "Nyxt provides a uniform interface to some password managers including "
         (:a :href "https://keepassxc.org/" "KeepassXC")
         " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
-        "The installed password manager is automatically
-detected. Use " (:code "make-password-interface") " to automatically
-return the first password interface with a non-nil executable
-path (e.g. the executable was found on your system).")
-    (:p "See the " (:code "password:*interfaces*") " for the list of registered
-password manager interfaces.")
+        "The supported installed password manager is automatically detected."
+        "See the " (:code "password-interface") " buffer slot for customization.")
     (:p "You may use the " (:code "define-configuration") " macro with
 any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
@@ -272,9 +268,9 @@ convenience, " (:code "load-init-file") " (re)loads your initialization file.")
 existing instance instead of a separate instance that exits immediately.")
     (:p "The `remote-execution-p' slot of the `browser' class of the remote
 instance must be non-nil.")
-    (:p "To let know a private instance of Nyxt to load a foo.lisp script and run it's
+    (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its
 `foo' function:")
-    (:pre (:code "nyxt --data-profile private --remote --load foo.lisp --eval '(foo)'"))
+    (:pre (:code "nyxt --data-profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
     (:h2 "Troubleshooting")
     (:h3 "Playing videos")

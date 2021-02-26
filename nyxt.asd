@@ -23,8 +23,6 @@
                :local-time
                :log4cl
                :mk-string-metrics
-               #-darwin
-               :osicat
                :parenscript
                :quri
                :serapeum
@@ -37,7 +35,6 @@
                :trivial-package-local-nicknames
                :trivial-types
                :unix-opts
-               :usocket
                ;; Local systems:
                :nyxt/user-interface
                :nyxt/text-buffer
@@ -119,6 +116,7 @@
                (:file "reduce-tracking-mode")
                (:file "os-package-manager-mode")
                (:file "visual-mode")
+               (:file "watch-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
                (:file "input-edit")
@@ -133,7 +131,6 @@
                (:file "status")
                ;; Depends on everything else:
                (:file "about")
-               (:file "session")
                (:file "start")
                (:file "tutorial")
                (:file "manual"))

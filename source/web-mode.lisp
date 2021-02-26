@@ -68,6 +68,8 @@ and to index the top of the page.")
        "C-g" 'follow-hint
        "M-g" 'follow-hint-new-buffer-focus
        "C-u M-g" 'follow-hint-new-buffer
+       "C-M-g" 'follow-hint-nosave-buffer-focus
+       "C-u C-M-g" 'follow-hint-nosave-buffer
        "C-x C-w" 'copy-hint-url
        "C-c" 'copy
        "button9" 'history-forwards
@@ -119,6 +121,8 @@ and to index the top of the page.")
        "M-g g" 'follow-hint-new-buffer-focus
        "C-u M-g M-g" 'follow-hint-new-buffer
        "C-u M-g g" 'follow-hint-new-buffer
+       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
+       "C-M-g g" 'follow-hint-nosave-buffer
        "C-x C-w" 'copy-hint-url
        "C-y" 'paste
        "M-w" 'copy
@@ -152,6 +156,8 @@ and to index the top of the page.")
        "f" 'follow-hint
        "F" 'follow-hint-new-buffer-focus
        "; f" 'follow-hint-new-buffer
+       "g f" 'follow-hint-nosave-buffer
+       "g F" 'follow-hint-nosave-buffer-focus
        "button9" 'history-forwards
        "button8" 'history-backwards
        "+" 'zoom-in-page
@@ -206,7 +212,8 @@ and to index the top of the page.")
       (if (and (input-tag-p response) url-empty)
           (funcall-safely #'paste)
           (unless url-empty
-            (make-buffer-focus :url (url-at-point buffer)))))))
+            (make-buffer-focus :url (url-at-point buffer)
+                               :nosave-buffer-p (nosave-buffer-p buffer)))))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
