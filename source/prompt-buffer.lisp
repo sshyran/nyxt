@@ -67,8 +67,7 @@ All ARGS are declared as `ignorable'."
                   :outline "none"
                   :padding "3px"
                   :background-color "#E8E8E8"
-                  :width "100%"
-                  :autofocus "true")
+                  :width "100%")
                  (".source"
                   :margin-left "10px"
                   :margin-top "15px")
@@ -237,7 +236,9 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
           (:div :id "prompt" (prompter:prompt prompt-buffer))
           ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
           (:div :id "prompt-extra" "[?/?]")
-          (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
+          (:div (:input :type "text" :id "input"
+                        :value (prompter:input prompt-buffer)
+                        :autofocus "true")))
     ;; TODO: Support multi columns and sources.
     (:div :id "suggestions"))))
 
@@ -316,12 +317,6 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
    (current-window)
    (ps:ps (ps:chain document
                     (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
-  ;; TODO: The following is supposed to focus on the HTML input but does not work.
-  (ffi-minibuffer-evaluate-javascript-async
-   (current-window)
-   (ps:ps (ps:chain document
-                    (get-element-by-id "input")
-                    (focus))))
   (update-suggestion-html prompt-buffer))
 
 (defun watch-prompt (prompt-buffer)
