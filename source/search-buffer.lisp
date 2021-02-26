@@ -128,18 +128,6 @@
         :buffer-id (id (buffer match))
         :buffer-title (title (buffer match))))
 
-(defmethod object-string ((match match))
-  (body match))
-
-(defmethod object-display ((match match))
-  (let* ((id (identifier match)))
-    (format nil "~a …~a…" id (body match))))
-
-(defmethod object-display ((match multi-buffer-match))
-  (let* ((id (identifier match))
-         (buffer-id (id (buffer match))))
-    (format nil "~a:~a …~a…  ~a" buffer-id id (body match) (title (buffer match)))))
-
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
   (loop for element in (handler-case (cl-json:decode-json-from-string matches-json)
                          (error () nil))
@@ -174,34 +162,6 @@
     (ps:dolist (node (qsa document ".nyxt-search-node"))
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
   (remove-search-nodes))
-
-(defun search-over-buffers (buffers &key (case-sensitive-p nil explicit-case-p))
-  "Add search boxes for a given search string over the
-provided buffers."
-  (let* ((num-buffers (list-length buffers))
-         (prompt-text
-           (if (> num-buffers 1)
-               (format nil "Search over ~d buffers for (3+ characters)" num-buffers)
-               "Search for (3+ characters)")))
-    (prompt-minibuffer
-     :input-prompt prompt-text
-     :suggestion-function
-     #'(lambda (minibuffer)
-         (unless explicit-case-p
-           (setf case-sensitive-p (not (str:downcasep (input-buffer minibuffer)))))
-         (match-suggestion-function (input-buffer minibuffer) buffers case-sensitive-p))
-     :changed-callback
-     (let ((subsequent-call nil))
-       (lambda ()
-         ;; when the minibuffer initially appears, we don't
-         ;; want update-selection-highlight-hint to scroll
-         ;; but on subsequent calls, it should scroll
-         (update-selection-highlight-hint
-          :scroll subsequent-call)
-         (setf subsequent-call t)))
-     :cleanup-function (lambda () (remove-focus))
-     :history (nyxt::minibuffer-search-history *browser*))
-    (update-selection-highlight-hint :follow t :scroll t)))
 
 (define-command remove-search-hints ()
   "Remove all search hints."
