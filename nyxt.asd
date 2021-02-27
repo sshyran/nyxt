@@ -35,6 +35,7 @@
                :trivial-package-local-nicknames
                :trivial-types
                :unix-opts
+               :html-diff
                ;; Local systems:
                :nyxt/user-interface
                :nyxt/text-buffer
