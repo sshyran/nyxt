@@ -6,36 +6,6 @@
   (:documentation "Mode for displaying web-buffer diffs."))
 (in-package :nyxt/diff-mode)
 
-;; colours based on the modus-operandi theme by Protesilaos Stavrou, which
-;; follows the highest standard on accessibility
-(defvar html-diff-style
-  "<style>
-  ins
-  {background-color: #bbeabb;
-   text-decoration: none}
-  del
-  {background-color: #efcbcf;
-   text-decoration: none}
-</style>
-"
-  "TODO")
-
-;; this is the right way, but the I can't define a background-colour for the del
-;; and ins tag within the nyxt-diff-replace class
-;; (defvar html-diff-style
-;;   "<style>
-;;   .nyxt-diff-insert
-;;   {background-color: #bbeabb;
-;;    text-decoration: none}
-;;   .nyxt-diff-delete
-;;   {background-color: #efcbcf;
-;;    text-decoration: none}
-;;   .nyxt-diff-replace
-;;   {background-color: #ecdfbf;
-;;    text-decoration: none}
-;; </style>"
-;;   "TODO")
-
 ;; this doesn't contemplate if buffer *diff* already exists
 ;; add a proper title perhaps?  (*diff* + old buffer name + new buffer name)
 (defun make-diff-buffer (html-diff-string html-diff-style)
@@ -68,10 +38,25 @@
                                          :replace-class "nyxt-diff-replace")))
     (make-diff-buffer (princ diff-html) html-diff-style)))
 
-;; (define-mode diff-mode ()
-;;   "TODO"
-;;   ((new-html :documentation "TODO")
-;;    (old-html :documentation "TODO")
-;;    (default-display-diff-view :documentation "TODO")
-;;    (destructor (lambda (mode) TODO))
-;;    (constructor (lambda (mode) TODO))))
+(define-mode diff-mode ()
+  "TODO"
+  ((new-html :documentation "TODO")
+   (old-html :documentation "TODO")
+   (diff-style (cl-css:css
+                '((".nyxt-diff-insert"n
+                   :text-decoration none
+                   :background-color "#bbeabb")
+                  ("ins.nyxt-diff-replace"
+                   :text-decoration none
+                   :background-color "#bbeabb")
+                  (".nyxt-diff-delete"
+                   :text-decoration none
+                   :background-color "#efcbcf")
+                  ("del.nyxt-diff-replace"
+                   :text-decoration none
+                   :background-color "#efcbcf")))
+               :documentation "Colours based on the modus-operandi theme by
+Protesilaos Stavrou, which follows the highest standard on accessibility.")
+   ;; (default-display-diff-view :documentation "TODO")
+   (destructor (lambda (mode) TODO))
+   (constructor (lambda (mode) TODO))))

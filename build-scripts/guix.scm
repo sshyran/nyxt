@@ -182,6 +182,7 @@
        ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
        ("trivial-types" ,sbcl-trivial-types)
        ("unix-opts" ,sbcl-unix-opts)
+       ("cl-html-diff" ,sbcl-cl-html-diff)
        ;; System deps
        ("coreutils" ,coreutils-minimal)
        ;; WebKitGTK deps
