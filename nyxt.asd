@@ -96,6 +96,7 @@
                (:file "history-tree-mode")
                (:file "list-history-mode")
                (:file "web-mode")
+               (:file "diff-mode")
                (:file "reading-line-mode")
                (:file "style-mode")
                (:file "certificate-exception-mode")
