@@ -48,6 +48,6 @@ sbcl \
     --eval "(ql:quickload :nyxt)" \
     --eval "(ql:quickload :nyxt-ubuntu-package)" \
 		--eval '(format t "==> CFFI foreign libraries:~%")' \
-		--eval '(dolist (lib (cffi:list-foreign-libraries)) (format t "~a~%" (cffi:foreign-library-pathname lib)))' \
+		--eval '(let ((*print-right-margin* 9999)) (describe (find (quote cl-webkit2::libwebkit2) (cffi:list-foreign-libraries) :key (quote cffi:foreign-library-name))))' \
 		--eval "(asdf:make :nyxt-ubuntu-package)" \
     --quit
