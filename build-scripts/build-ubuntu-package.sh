@@ -47,7 +47,7 @@ sbcl \
     --eval "(ql:quickload :linux-packaging)" \
     --eval "(ql:quickload :nyxt)" \
     --eval "(ql:quickload :nyxt-ubuntu-package)" \
-		--eval '(format t "==> CFFI foreign libraries:~%")'
-		--eval '(dolist (lib (cffi:list-foreign-libraries)) (format t "~a~%" (cffi:foreign-library-pathname lib)))'
+		--eval '(format t "==> CFFI foreign libraries:~%")' \
+		--eval '(dolist (lib (cffi:list-foreign-libraries)) (format t "~a~%" (cffi:foreign-library-pathname lib)))' \
 		--eval "(asdf:make :nyxt-ubuntu-package)" \
     --quit
