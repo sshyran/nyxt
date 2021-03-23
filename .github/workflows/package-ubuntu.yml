@@ -39,6 +39,10 @@ jobs:
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/quicklisp-libraries\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
+    - name: Test dpkg error with webkit
+      shell: bash
+      run: dpkg -S /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+
     - name: Build special SBCL and make package
       shell: bash
       run: sudo ./build-scripts/build-ubuntu-package.sh
