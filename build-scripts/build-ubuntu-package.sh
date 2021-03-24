@@ -41,6 +41,14 @@ sbcl --eval '(require "asdf")' \
 		 --quit
 sed -i "s/VERSION/$(cat version)/" assets/nyxt.desktop
 
+echo "==> LDCONFIG"
+ldconfig -p
+echo "==> LDCONFIG /usr"
+ldconfig /usr
+echo "==> LDCONFIG"
+ldconfig -p
+echo "==> LDCONFIG DONE"
+
 sbcl \
     --eval '(setf *debugger-hook* (lambda (c h) (declare (ignore h)) (format t "~A~%" c) (sb-ext:quit :unix-status -1)))' \
     --load ~/quicklisp/setup.lisp \
