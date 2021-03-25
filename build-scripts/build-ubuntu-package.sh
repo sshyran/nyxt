@@ -56,6 +56,8 @@ echo "==> LN"
 ln -sfv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 ln -sfv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
 echo "==> LDD"
+which ldd
+ldd /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 ldd /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 echo "==> LN DONE"
 
