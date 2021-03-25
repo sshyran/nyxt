@@ -41,11 +41,15 @@ sbcl --eval '(require "asdf")' \
 		 --quit
 sed -i "s/VERSION/$(cat version)/" assets/nyxt.desktop
 
-echo "==> LDCONFIG"
+echo "==> LDCONFIG -p"
 ldconfig -p
+echo "==> LDCONFIG rm"
+rm /etc/ld.so.cache
+echo "==> LDCONFIG"
+ldconfig
 echo "==> LDCONFIG /usr"
 ldconfig /usr
-echo "==> LDCONFIG"
+echo "==> LDCONFIG -p"
 ldconfig -p
 echo "==> LDCONFIG DONE"
 
