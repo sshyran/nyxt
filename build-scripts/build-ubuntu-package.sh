@@ -52,6 +52,10 @@ ldconfig /usr
 echo "==> LDCONFIG -p"
 ldconfig -p
 echo "==> LDCONFIG DONE"
+echo "==> LN"
+ln -sfv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+ln -sfv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+echo "==> LN DONE"
 
 sbcl \
     --eval '(setf *debugger-hook* (lambda (c h) (declare (ignore h)) (format t "~A~%" c) (sb-ext:quit :unix-status -1)))' \
