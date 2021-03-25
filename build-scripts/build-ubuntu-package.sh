@@ -52,12 +52,12 @@ ldconfig /usr
 echo "==> LDCONFIG -p"
 ldconfig -p
 echo "==> LDCONFIG DONE"
-echo "==> LN"
-ln -sfv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
-ln -sfv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-echo "==> LDD"
-which ldd
+echo "==> LDD old"
 ldd /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+echo "==> LN"
+ln -sv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+ln -sv /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37 /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+echo "==> LDD new"
 ldd /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 echo "==> LN DONE"
 
