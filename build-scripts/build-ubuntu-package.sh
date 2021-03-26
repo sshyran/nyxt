@@ -52,6 +52,10 @@ ldconfig /usr
 echo "==> LDCONFIG -p"
 ldconfig -p
 echo "==> LDCONFIG DONE"
+echo "==> LS, FILE, DPKG"
+file /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+ls -l /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+dpkg -S /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 echo "==> LDD old"
 ldd /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 echo "==> LN"
