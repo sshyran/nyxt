@@ -27,6 +27,7 @@ rm quicklisp.lisp
 
 mkdir -p ~/common-lisp
 git clone --depth=1 https://gitlab.com/ralt/linux-packaging.git ~/common-lisp/linux-packaging/ &> /dev/null
+git -C ~/common-lisp/linux-packaging/ pull
 ## Modern ASDF needed.
 git clone --depth=1 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
 
