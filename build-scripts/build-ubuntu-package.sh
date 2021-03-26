@@ -50,5 +50,7 @@ sbcl \
     --eval "(ql:quickload :nyxt-ubuntu-package)" \
 		--eval '(format t "==> CFFI foreign libraries:~%")' \
 		--eval '(let ((*print-right-margin* 9999)) (describe (find (quote cl-webkit2::libwebkit2) (cffi:list-foreign-libraries) :key (quote cffi:foreign-library-name))))' \
+		--eval '(format t "==> SYMLINK?: ~a~%" (sb-posix:s-islnk (sb-posix:stat-mode (sb-posix:lstat "/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so"))))' \
+		--eval '(format t "==> LAST VERSION?: ~a~%" (fboundp (quote linux-packaging/deb::symlinkp)))' \
 		--eval "(asdf:make :nyxt-ubuntu-package)" \
     --quit
