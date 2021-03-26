@@ -52,9 +52,12 @@ ldconfig /usr
 echo "==> LDCONFIG -p"
 ldconfig -p
 echo "==> LDCONFIG DONE"
-echo "==> LS, FILE, DPKG"
+echo "==> LS, FILE"
 file /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 ls -l /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
+echo "==> DPKG readlink"
+dpkg -S $(readlink -f /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so)
+echo "==> DPKG"
 dpkg -S /lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
 echo "==> LDD old"
 ldd /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
